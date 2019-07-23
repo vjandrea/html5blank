@@ -83,7 +83,7 @@ gulp.task( "sass", function () {
 });
 
 /** STYLES */
-gulp.task( "styles", [ "sass" ], function() {
+gulp.task( "styles", gulp.series( "sass" ), function() {
 	console.log( "`styles` task run in `" + env + "` environment" );
 
 	var stream = gulp.src( cssminSrc[ env ] )
@@ -158,7 +158,14 @@ gulp.task( "envProduction", function() {
 });
 
 /** Livereload */
-gulp.task( "watch", [ "template", "styles", "jshint", "modernizr", "jquery", "normalize" ], function() {
+gulp.task( "watch", gulp.series( 
+	"template", 
+	"styles", 
+	"jshint", 
+	"modernizr", 
+	"jquery", 
+	"normalize" 
+), function() {
 	var server = $.livereload;
 	server.listen();
 
@@ -183,7 +190,7 @@ gulp.task( "watch", [ "template", "styles", "jshint", "modernizr", "jquery", "no
 });
 
 /** Build */
-gulp.task( "build", [
+gulp.task( "build", gulp.series(
 	"envProduction",
 	"clean",
 	"template",
@@ -192,9 +199,9 @@ gulp.task( "build", [
 	"jshint",
 	"copy",
 	"uglify"
-], function () {
+), function () {
 	console.log("Build is finished");
 });
 
 /** Gulp default task */
-gulp.task( "default", ["watch"] );
+gulp.task( "default", gulp.series( "watch" ) );
