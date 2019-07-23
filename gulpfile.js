@@ -127,7 +127,7 @@ gulp.task( "modernizr", function() {
 		fs = require( "fs" );
 
 		modernizr.build(config, function(code) {
-			fs.writeFile("./src/js/lib/modernizr.js", code);
+			fs.writeFileSync("./src/js/lib/modernizr.js", code);
 		});
 });
 
