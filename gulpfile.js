@@ -140,14 +140,14 @@ gulp.task( "uglify", function() {
 });
 
 /** jQuery **/
-gulp.task("jquery", function() {
+gulp.task( "jquery", function() {
 	return gulp.src("node_modules/jquery/dist/jquery.js")
 		.pipe( $.sourcemaps.init() )
 		.pipe( $.sourcemaps.write( "." ) )
 		.pipe( gulp.dest( "src/js/lib" ) );
 });
 
-gulp.task("normalize", function() {
+gulp.task( "normalize", function() {
 	return gulp.src("node_modules/normalize.css/normalize.css")
 		.pipe( gulp.dest( "src/css/lib" ) );
 });
