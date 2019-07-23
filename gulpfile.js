@@ -121,7 +121,7 @@ gulp.task( "template", function() {
 });
 
 /** Modernizr **/
-gulp.task( "modernizr", function() {
+gulp.task( "modernizr", function(done) {
 	var modernizr = require( "modernizr" ),
 		config = require( "./node_modules/modernizr/lib/config-all"),
 		fs = require( "fs" );
@@ -129,6 +129,8 @@ gulp.task( "modernizr", function() {
 		modernizr.build(config, function(code) {
 			fs.writeFileSync("./src/js/lib/modernizr.js", code);
 		});
+
+		done();
 });
 
 /** Uglify */
