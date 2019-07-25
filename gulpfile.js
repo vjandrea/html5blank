@@ -1,6 +1,6 @@
 "use strict"
 
-const { series } = require( 'gulp' );
+const { series, src, dest } = require( 'gulp' );
 
 var plugins = require( 'gulp-load-plugins' )();
 
@@ -42,6 +42,17 @@ function clean(callback) {
 /** Copy **/
 function copy(callback) {
 	// console.log( 'copy' );
+	return src([
+		'src/*.{php,png,css}',
+		'src/modules/*.php',
+		'src/img/**/*.{jpg,png,svg,gif,webp,ico}',
+		'src/fonts/*.{woff,woff2,ttf,otf,eot,svg}',
+		'src/languages/*.{po,mo,pot}'
+	], {
+		base: 'src'
+	})
+		.pipe( dest( 'dist' ) );
+		
 	callback();
 }
 
