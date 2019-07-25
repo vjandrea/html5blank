@@ -96,7 +96,6 @@ function sass( callback ) {
 
 /** styles **/
 function stylesTask( callback ) {
-	// console.log( 'stylesTask' );
 	console.log( '`styles` task run in `' + env + '` environment.' );
 
 	var stream = src( css[env] )
@@ -129,7 +128,14 @@ function jshint( callback ) {
 
 /** Template **/
 function template( callback ) {
-	// console.log( 'template' );
+	console.log( '`template` task run in `' + env + '` environment.' );
+
+	var is_debug = (env === 'development' ? 'true' : 'false');
+
+	return src( 'src/dev-templates/is-debug.php' )
+		.pipe( plugins.template({ is_debug: is_debug }) )
+		.pipe( dest( 'src/modules' ) );
+
 	callback();
 }
 
