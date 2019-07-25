@@ -1,6 +1,6 @@
 "use strict"
 
-const { series, src, dest } = require( 'gulp' );
+const { series, src, dest, watch } = require( 'gulp' );
 
 var plugins = require( 'gulp-load-plugins' )();
 
@@ -85,7 +85,7 @@ function sass() {
 }
 
 
-/** styles **/
+/** Styles **/
 function stylesTask() {
 	console.log( '`styles` task run in `' + env + '` environment.' );
 
@@ -142,45 +142,67 @@ function modernizr( callback ) {
 
 
 /** Uglify **/
-function uglify( callback ) {
-	// console.log('uglify');
-	callback();
+function uglify() {
+	
+	return src( js )
+		.pipe( plugins.concat( 'scripts.min.js' ) )
+		.pipe( plugins.uglify() )
+		.pipe( dest( 'dist/js' ) );
 }
 
 
 /** jQuery **/
-function jquery( callback ) {
-	// console.log('jquery');
-	callback();
+function jquery() {
+	
+	return src( 'node_modules/jquery/dist/jquery.js' )
+		.pipe( plugins.sourcemaps.init() )
+		.pipe( plugins.sourcemaps.write() )
+		.pipe( dest( 'src/js/lib' ) );
 }
 
 
 /** Normalize **/
-function normalize( callback ) {
-	// console.log('normalize');
-	callback();
+function normalize() {
+	
+	return src( 'node_modules/normalize.css/normalize.css' )
+		.pipe( dest( 'src/css/lib' ) );
 }
 
 
 /** envProduction **/
 function envProduction( callback ) {
-	// console.log('envProduction');
+	env = 'production';
+
 	callback();
 }
 
 
-/** watch **/
-function watch( callback ) {
-	// console.log('watch');
-	series(template, styles);
-	callback();
+/** Watch **/
+function watchTask() {
+	console.log('watchTask');
+	plugins.livereload.listen();
+
+	watch([
+		'src/js/**/*.js',
+		'src/*.php',
+		'src/*.css'
+	], { events: 'all' })
+		.on( 'change', function( path ) {
+			console.log( path );
+		});
+
+	watch([
+		'src/css/*.css',
+		'src/css/sass/**/*.scss'
+	], stylesTask);
+
+	watch( 'src/js/{!(lib)/*.js,*.js}', jshint );
 }
 
 
 /** Build **/
-function build( callback ){
-	// console.log('buildTask');
-	callback();
+function buildTask( callback ){
+	callback(console.log('Build complete.'));
 }
 
 
@@ -195,8 +217,8 @@ exports.uglify = uglify;
 exports.jquery = jquery;
 exports.normalize = normalize;
 exports.envProduction = envProduction;
-exports.watch = series( template, exports.styles, jshint, modernizr, jquery, normalize );
-exports.build = series( envProduction, clean, template, exports.styles, modernizr, jshint, copy, uglify );
+exports.watch = series( template, exports.styles, jshint, modernizr, jquery, normalize, watchTask );
+exports.build = series( envProduction, clean, template, exports.styles, modernizr, jshint, copy, uglify, buildTask );
 exports.default = series( exports.watch );
 
 /*
