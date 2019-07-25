@@ -1,209 +1,200 @@
-/* jshint node: true */
-/* global $: true */
-"use strict";
+"use strict"
 
-var gulp = require( "gulp" ),
-	/** @type {Object} Loader of Gulp plugins from `package.json` */
-	$ = require( "gulp-load-plugins" )(),
-	/** @type {Array} JS source files to concatenate and uglify */
-	uglifySrc = [
-		/** Modernizr */
-		"src/js/lib/modernizr.js",
-		/** Conditionizr */
-		"src/js/lib/conditionizr-4.3.0.min.js",
-		/** jQuery */
-		"node_modules/jquery/dist/jquery.js",
-		/** Page scripts */
-		"src/js/scripts.js"
-	],
-	/** @type {Object of Array} CSS source files to concatenate and minify */
-	cssminSrc = {
-		development: [
-			/** The banner of `style.css` */
-			"src/css/banner.css",
-			/** Theme style */
-			"src/css/style.css"
-		],
-		production: [
-			/** The banner of `style.css` */
-			"src/css/banner.css",
-			/** Normalize */
-			"node_modules/normalize.css/normalize.css",
-			/** Theme style */
-			"src/css/style.css"
-		]
-	},
-	/** @type {String} Used inside task for set the mode to 'development' or 'production' */
-	env = (function() {
-		/** @type {String} Default value of env */
-		var env = "development";
+const { series } = require( 'gulp' );
 
-		/** Test if there was a different value from CLI to env
-			Example: gulp styles --env=production
-			When ES6 will be default. `find` will replace `some`  */
-		process.argv.some(function( key ) {
-			var matches = key.match( /^\-{2}env\=([A-Za-z]+)$/ );
+var plugins = require( 'gulp-load-plugins' )();
 
-			if ( matches && matches.length === 2 ) {
-				env = matches[1];
-				return true;
-			}
-		});
+/** source files for uglify **/
+var js = [
+	'src/js/lib/modernizr.js',
+	'src/js/lib/conditionizr-4.3.0.min.js',
+	'node_modules/jquery/dist/jquery.js',
+	'src/js/scripts.js'
+];
 
-		return env;
-	} ());
+var css_dev = [
+	'src/css/banner.css',
+	'src/css/style.css'
+];
 
-/** Clean */
-gulp.task( "clean", require( "del" ).bind( null, [ ".tmp", "dist" ] ) );
+var css_prod = [
+	'src/css/banner.css',
+	'node_modules/normalize.css/normalize.css',
+	'src/css/style.css'
+];
 
-/** Copy */
-gulp.task( "copy", function() {
-	return gulp.src([
-			"src/*.{php,png,css}",
-			"src/modules/*.php",
-			"src/img/**/*.{jpg,png,svg,gif,webp,ico}",
-			"src/fonts/*.{woff,woff2,ttf,otf,eot,svg}",
-			"src/languages/*.{po,mo,pot}"
-		], {
-			base: "src"
-		})
-		.pipe( gulp.dest( "dist" ) );
-});
+var clean_target = [
+	'.tmp',
+	'dist'
+];
 
-/** CSS Preprocessors */
-gulp.task( "sass", function () {
-	return gulp.src( "src/css/sass/style.scss" )
-		.pipe( $.sourcemaps.init() )
-		.pipe( $.sass() )
-		.pipe( $.sourcemaps.write( "." ) )
-		.on( "error", function( e ) {
-			console.error( e );
-		})
-		.pipe( gulp.dest( "src/css" ) );
-});
 
-/** STYLES */
-gulp.task( "styles", gulp.series( "sass" ), function() {
-	console.log( "`styles` task run in `" + env + "` environment" );
+/** Clean **/
+function clean(callback) {
+	// console.log( 'clean' );
+	var del = require( 'del' );
+	return del(clean_target);
 
-	var stream = gulp.src( cssminSrc[ env ] )
-		.pipe( $.concat( "style.css" ))
-		.pipe( $.autoprefixer( "last 2 version" ) );
+	callback();
+}
 
-	if ( env === "production" ) {
-		stream = stream.pipe( $.csso() );
-	}
 
-	return stream.on( "error", function( e ) {
-			console.error( e );
-		})
-		.pipe( gulp.dest( "src" ) );
-});
+/** Copy **/
+function copy(callback) {
+	// console.log( 'copy' );
+	callback();
+}
 
-/** JSHint */
-gulp.task( "jshint", function () {
-	/** Test all `js` files exclude those in the `lib` folder */
-	return gulp.src( "src/js/{!(lib)/*.js,*.js}" )
-		.pipe( $.jshint() )
-		.pipe( $.jshint.reporter( "jshint-stylish" ) )
-		.pipe( $.jshint.reporter( "fail" ) );
-});
 
-/** Templates */
-gulp.task( "template", function() {
-	console.log( "`template` task run in `" + env + "` environment" );
+/** SASS **/
+function sass(callback) {
+	// console.log( 'sass' );
+	callback();
+}
 
-    var is_debug = ( env === "production" ? "false" : "true" );
 
-    return gulp.src( "src/dev-templates/is-debug.php" )
-        .pipe( $.template({ is_debug: is_debug }) )
-        .pipe( gulp.dest( "src/modules" ) );
-});
+/** styles **/
+function styles(callback) {
+	// console.log( 'styles' );
+	callback();
+}
+
+
+/** JSHint **/
+function jshint(callback) {
+	// console.log( 'jshint' );
+	callback();
+}
+
+
+/** Template **/
+function template(callback) {
+	// console.log( 'template' );
+	callback();
+}
+
 
 /** Modernizr **/
-gulp.task( "modernizr", function(done) {
-	var modernizr = require( "modernizr" ),
-		config = require( "./node_modules/modernizr/lib/config-all"),
-		fs = require( "fs" );
+function modernizr(callback) {
+	// console.log( 'modernizr' );
+	var modernizr = require( 'modernizr' ),
+		config = require( './node_modules/modernizr/lib/config-all' ),
+		fs = require( 'fs' );
 
-		modernizr.build(config, function(code) {
-			fs.writeFileSync("./src/js/lib/modernizr.js", code);
-		});
-
-		done();
-});
-
-/** Uglify */
-gulp.task( "uglify", function() {
-	return gulp.src( uglifySrc )
-		.pipe( $.concat( "scripts.min.js" ) )
-		.pipe( $.uglify() )
-		.pipe( gulp.dest( "dist/js" ) );
-});
-
-/** jQuery **/
-gulp.task( "jquery", function() {
-	return gulp.src("node_modules/jquery/dist/jquery.js")
-		.pipe( $.sourcemaps.init() )
-		.pipe( $.sourcemaps.write( "." ) )
-		.pipe( gulp.dest( "src/js/lib" ) );
-});
-
-gulp.task( "normalize", function() {
-	return gulp.src("node_modules/normalize.css/normalize.css")
-		.pipe( gulp.dest( "src/css/lib" ) );
-});
-
-/** `env` to 'production' */
-gulp.task( "envProduction", function() {
-	env = "production";
-});
-
-/** Livereload */
-gulp.task( "watch", gulp.series( 
-	"template", 
-	"styles", 
-	"jshint", 
-	"modernizr", 
-	"jquery", 
-	"normalize" 
-), function() {
-	var server = $.livereload;
-	server.listen();
-
-	/** Watch for livereoad */
-	gulp.watch([
-		"src/js/**/*.js",
-		"src/*.php",
-		"src/*.css"
-	]).on( "change", function( file ) {
-		console.log( file.path );
-		server.changed( file.path );
+	modernizr.build( config, function( code ) {
+		fs.writeFileSync( './src/js/lib/modernizr.js', code );
 	});
 
-	/** Watch for autoprefix */
-	gulp.watch( [
-		"src/css/*.css",
-		"src/css/sass/**/*.scss"
-	], [ "styles" ] );
+	callback();
+}
 
-	/** Watch for JSHint */
-	gulp.watch( "src/js/{!(lib)/*.js,*.js}", ["jshint"] );
-});
 
-/** Build */
-gulp.task( "build", gulp.series(
-	"envProduction",
-	"clean",
-	"template",
-	"styles",
-	"modernizr",
-	"jshint",
-	"copy",
-	"uglify"
-), function () {
-	console.log("Build is finished");
-});
+/** Uglify **/
+function uglify(callback) {
+	// console.log('uglify');
+	callback();
+}
 
-/** Gulp default task */
-gulp.task( "default", gulp.series( "watch" ) );
+
+/** jQuery **/
+function jquery(callback) {
+	// console.log('jquery');
+	callback();
+}
+
+
+/** Normalize **/
+function normalize(callback) {
+	// console.log('normalize');
+	callback();
+}
+
+
+/** envProduction **/
+function envProduction(callback) {
+	// console.log('envProduction');
+	callback();
+}
+
+
+/** watch **/
+function watch(callback) {
+	// console.log('watch');
+	series(template, styles);
+	callback();
+}
+
+
+/** Build **/
+function build(callback){
+	// console.log('buildTask');
+	callback();
+}
+
+
+exports.clean = clean;
+exports.copy = copy;
+exports.sass = sass;
+exports.styles = series( sass );
+exports.jshint = jshint;
+exports.template = template;
+exports.modernizr = modernizr;
+exports.uglify = uglify;
+exports.jquery = jquery;
+exports.normalize = normalize;
+exports.envProduction = envProduction;
+exports.watch = series( template, exports.styles, jshint, modernizr, jquery, normalize );
+exports.build = series( envProduction, clean, template, exports.styles, modernizr, jshint, copy, uglify );
+exports.default = series( exports.watch );
+
+/*
+[07:31:29] Tasks for ~/dev/GitHub/html5blank-vjandrea/gulpfile.old
+[07:31:29] ├── clean
+[07:31:29] ├── copy
+[07:31:29] ├── sass
+[07:31:29] ├─┬ styles
+[07:31:29] │ └─┬ <series>
+[07:31:29] │   └── sass
+[07:31:29] ├── jshint
+[07:31:29] ├── template
+[07:31:29] ├── modernizr
+[07:31:29] ├── uglify
+[07:31:29] ├── jquery
+[07:31:29] ├── normalize
+[07:31:29] ├── envProduction
+[07:31:29] ├─┬ watch
+[07:31:29] │ └─┬ <series>
+[07:31:29] │   ├── template
+[07:31:29] │   ├─┬ styles
+[07:31:29] │   │ └─┬ <series>
+[07:31:29] │   │   └── sass
+[07:31:29] │   ├── jshint
+[07:31:29] │   ├── modernizr
+[07:31:29] │   ├── jquery
+[07:31:29] │   └── normalize
+[07:31:29] ├─┬ build
+[07:31:29] │ └─┬ <series>
+[07:31:29] │   ├── envProduction
+[07:31:29] │   ├── clean
+[07:31:29] │   ├── template
+[07:31:29] │   ├─┬ styles
+[07:31:29] │   │ └─┬ <series>
+[07:31:29] │   │   └── sass
+[07:31:29] │   ├── modernizr
+[07:31:29] │   ├── jshint
+[07:31:29] │   ├── copy
+[07:31:29] │   └── uglify
+[07:31:29] └─┬ default
+[07:31:29]   └─┬ <series>
+[07:31:29]     └─┬ watch
+[07:31:29]       └─┬ <series>
+[07:31:29]         ├── template
+[07:31:29]         ├─┬ styles
+[07:31:29]         │ └─┬ <series>
+[07:31:29]         │   └── sass
+[07:31:29]         ├── jshint
+[07:31:29]         ├── modernizr
+[07:31:29]         ├── jquery
+[07:31:29]         └── normalize
+
+*/
