@@ -48,19 +48,15 @@ var env = (function() {
 
 
 /** Clean **/
-function clean( callback ) {
-	// console.log( 'clean' );
+function clean() {
 
 	var del = require( 'del' );
 	return del(clean_target);
-
-	callback();
 }
 
 
 /** Copy **/
-function copy( callback ) {
-	// console.log( 'copy' );
+function copy() {
 
 	return src([
 		'src/*.{php,png,css}',
@@ -72,14 +68,11 @@ function copy( callback ) {
 		base: 'src'
 	})
 		.pipe( dest( 'dist' ) );
-
-	callback();
 }
 
 
 /** SASS **/
-function sass( callback ) {
-	// console.log( 'sass' );
+function sass() {
 
 	return src( 'src/css/sass/style.scss' )
 		.pipe( plugins.sourcemaps.init() )
@@ -89,13 +82,11 @@ function sass( callback ) {
 			console.error( error );
 		})
 		.pipe( dest( 'src/css') );
-
-	callback();
 }
 
 
 /** styles **/
-function stylesTask( callback ) {
+function stylesTask() {
 	console.log( '`styles` task run in `' + env + '` environment.' );
 
 	var stream = src( css[env] )
@@ -114,20 +105,17 @@ function stylesTask( callback ) {
 
 
 /** JSHint **/
-function jshint( callback ) {
-	// console.log( 'jshint' );
+function jshint() {
 
 	return src( 'src/js/{!(lib)/*.js,*.js}' )
 		.pipe( plugins.jshint() )
 		.pipe( plugins.jshint.reporter( 'jshint-stylish' ) )
 		.pipe( plugins.jshint.reporter( 'fail' ));
-
-	callback();
 }
 
 
 /** Template **/
-function template( callback ) {
+function template() {
 	console.log( '`template` task run in `' + env + '` environment.' );
 
 	var is_debug = (env === 'development' ? 'true' : 'false');
@@ -135,8 +123,6 @@ function template( callback ) {
 	return src( 'src/dev-templates/is-debug.php' )
 		.pipe( plugins.template({ is_debug: is_debug }) )
 		.pipe( dest( 'src/modules' ) );
-
-	callback();
 }
 
 
