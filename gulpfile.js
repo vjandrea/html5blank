@@ -12,26 +12,45 @@ var js = [
 	'src/js/scripts.js'
 ];
 
-var css_dev = [
-	'src/css/banner.css',
-	'src/css/style.css'
-];
-
-var css_prod = [
-	'src/css/banner.css',
-	'node_modules/normalize.css/normalize.css',
-	'src/css/style.css'
-];
+var css = {
+	development: [
+		'src/css/banner.css',
+		'src/css/style.css'
+	], 
+	production: [
+		'src/css/banner.css',
+		'node_modules/normalize.css/normalize.css',
+		'src/css/style.css'
+	]
+};
 
 var clean_target = [
 	'.tmp',
 	'dist'
 ];
 
+var env = (function() {
+
+	env = "development";
+
+	process.argv.some(function( key ) {
+		var matches = key.match( /^\-{2}env\=([A-Za-z]+)$/ );
+
+		if ( matches && matches.length === 2 ) {
+			env = matches[1];
+			return true;
+		}
+	});
+
+	return env;
+
+} ());
+
 
 /** Clean **/
-function clean(callback) {
+function clean( callback ) {
 	// console.log( 'clean' );
+
 	var del = require( 'del' );
 	return del(clean_target);
 
@@ -40,8 +59,9 @@ function clean(callback) {
 
 
 /** Copy **/
-function copy(callback) {
+function copy( callback ) {
 	// console.log( 'copy' );
+
 	return src([
 		'src/*.{php,png,css}',
 		'src/modules/*.php',
@@ -52,41 +72,70 @@ function copy(callback) {
 		base: 'src'
 	})
 		.pipe( dest( 'dist' ) );
-		
+
 	callback();
 }
 
 
 /** SASS **/
-function sass(callback) {
+function sass( callback ) {
 	// console.log( 'sass' );
+
+	return src( 'src/css/sass/style.scss' )
+		.pipe( plugins.sourcemaps.init() )
+		.pipe( plugins.sass() )
+		.pipe( plugins.sourcemaps.write( '.' ) )
+		.on( 'error' , function( error ) {
+			console.error( error );
+		})
+		.pipe( dest( 'src/css') );
+
 	callback();
 }
 
 
 /** styles **/
-function styles(callback) {
-	// console.log( 'styles' );
-	callback();
+function stylesTask( callback ) {
+	// console.log( 'stylesTask' );
+	console.log( '`styles` task run in `' + env + '` environment.' );
+
+	var stream = src( css[env] )
+		.pipe( plugins.concat( 'style.css' ) )
+		.pipe( plugins.autoprefixer( 'last 2 version' ) );
+
+	if ( env == 'production' ) {
+		stream.pipe( plugins.csso() );
+	}
+
+	return stream.on( 'error', function( error ) {
+		console.error( error );
+	})
+		.pipe( dest( 'src' ) );
 }
 
 
 /** JSHint **/
-function jshint(callback) {
+function jshint( callback ) {
 	// console.log( 'jshint' );
+
+	return src( 'src/js/{!(lib)/*.js,*.js}' )
+		.pipe( plugins.jshint() )
+		.pipe( plugins.jshint.reporter( 'jshint-stylish' ) )
+		.pipe( plugins.jshint.reporter( 'fail' ));
+
 	callback();
 }
 
 
 /** Template **/
-function template(callback) {
+function template( callback ) {
 	// console.log( 'template' );
 	callback();
 }
 
 
 /** Modernizr **/
-function modernizr(callback) {
+function modernizr( callback ) {
 	// console.log( 'modernizr' );
 	var modernizr = require( 'modernizr' ),
 		config = require( './node_modules/modernizr/lib/config-all' ),
@@ -101,35 +150,35 @@ function modernizr(callback) {
 
 
 /** Uglify **/
-function uglify(callback) {
+function uglify( callback ) {
 	// console.log('uglify');
 	callback();
 }
 
 
 /** jQuery **/
-function jquery(callback) {
+function jquery( callback ) {
 	// console.log('jquery');
 	callback();
 }
 
 
 /** Normalize **/
-function normalize(callback) {
+function normalize( callback ) {
 	// console.log('normalize');
 	callback();
 }
 
 
 /** envProduction **/
-function envProduction(callback) {
+function envProduction( callback ) {
 	// console.log('envProduction');
 	callback();
 }
 
 
 /** watch **/
-function watch(callback) {
+function watch( callback ) {
 	// console.log('watch');
 	series(template, styles);
 	callback();
@@ -137,7 +186,7 @@ function watch(callback) {
 
 
 /** Build **/
-function build(callback){
+function build( callback ){
 	// console.log('buildTask');
 	callback();
 }
@@ -146,7 +195,7 @@ function build(callback){
 exports.clean = clean;
 exports.copy = copy;
 exports.sass = sass;
-exports.styles = series( sass );
+exports.styles = series( sass, stylesTask );
 exports.jshint = jshint;
 exports.template = template;
 exports.modernizr = modernizr;
