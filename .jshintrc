@@ -9,6 +9,7 @@
   "immed": true,
   "jquery": true,
   "noarg": true,
+  "node":true,
   "onevar": true,
   "quotmark": "double",
   "smarttabs": true,
