@@ -1,25 +1,37 @@
+/* jshint node: true */
+/* global plugins: true */
 "use strict"
 
 const { series, src, dest, watch } = require( 'gulp' );
 
+/** @type {Object} Loader of Gulp plugins from `package.json` */
 var plugins = require( 'gulp-load-plugins' )();
 
-/** source files for uglify **/
+/** @type {Array} JS source files to concatenate and uglify */
 var js = [
+	/** Modernizr */
 	'src/js/lib/modernizr.js',
+	/** Conditionizr */
 	'src/js/lib/conditionizr-4.3.0.min.js',
+	/** jQuery */
 	'node_modules/jquery/dist/jquery.js',
+	/** jQuery */
 	'src/js/scripts.js'
 ];
-
+/** @type {Object of Array} CSS source files to concatenate and minify */
 var css = {
 	development: [
+		/** The banner of `style.css` */
 		'src/css/banner.css',
+		/** Theme style */
 		'src/css/style.css'
 	], 
 	production: [
+		/** The banner of `style.css` */
 		'src/css/banner.css',
+		/** Normalize */
 		'node_modules/normalize.css/normalize.css',
+		/** Theme style */
 		'src/css/style.css'
 	]
 };
@@ -28,11 +40,13 @@ var clean_target = [
 	'.tmp',
 	'dist'
 ];
-
+/** @type {String} Used inside task for set the mode to 'development' or 'production' */
 var env = (function() {
-
+	/** @type {String} Default value of env */
 	env = "development";
-
+	/** Test if there was a different value from CLI to env
+		Example: gulp styles --env=production
+		When ES6 will be default. `find` will replace `some`  */	
 	process.argv.some(function( key ) {
 		var matches = key.match( /^\-{2}env\=([A-Za-z]+)$/ );
 
@@ -71,7 +85,7 @@ function copy() {
 }
 
 
-/** SASS **/
+/** CSS Preprocessors - SASS **/
 function sass() {
 
 	return src( 'src/css/sass/style.scss' )
@@ -106,7 +120,7 @@ function stylesTask() {
 
 /** JSHint **/
 function jshint() {
-
+	/** Test all `js` files excluding those in the `lib` folder */
 	return src( 'src/js/{!(lib)/*.js,*.js}' )
 		.pipe( plugins.jshint() )
 		.pipe( plugins.jshint.reporter( 'jshint-stylish' ) )
@@ -169,7 +183,7 @@ function normalize() {
 }
 
 
-/** envProduction **/
+/** `env` to 'production' */
 function envProduction( callback ) {
 	env = 'production';
 
@@ -177,11 +191,12 @@ function envProduction( callback ) {
 }
 
 
-/** Watch **/
+/** Livereload - Watchs **/
 function watchTask() {
 	console.log('watchTask');
 	plugins.livereload.listen();
 
+	/** Watch for livereoad */
 	watch([
 		'src/js/**/*.js',
 		'src/*.php',
@@ -191,11 +206,13 @@ function watchTask() {
 			console.log( path );
 		});
 
+	/** Watch for autoprefix */
 	watch([
 		'src/css/*.css',
 		'src/css/sass/**/*.scss'
 	], stylesTask);
 
+	/** Watch for JSHint */
 	watch( 'src/js/{!(lib)/*.js,*.js}', jshint );
 }
 
@@ -220,55 +237,3 @@ exports.envProduction = envProduction;
 exports.watch = series( template, exports.styles, jshint, modernizr, jquery, normalize, watchTask );
 exports.build = series( envProduction, clean, template, exports.styles, modernizr, jshint, copy, uglify, buildTask );
 exports.default = series( exports.watch );
-
-/*
-[07:31:29] Tasks for ~/dev/GitHub/html5blank-vjandrea/gulpfile.old
-[07:31:29] ├── clean
-[07:31:29] ├── copy
-[07:31:29] ├── sass
-[07:31:29] ├─┬ styles
-[07:31:29] │ └─┬ <series>
-[07:31:29] │   └── sass
-[07:31:29] ├── jshint
-[07:31:29] ├── template
-[07:31:29] ├── modernizr
-[07:31:29] ├── uglify
-[07:31:29] ├── jquery
-[07:31:29] ├── normalize
-[07:31:29] ├── envProduction
-[07:31:29] ├─┬ watch
-[07:31:29] │ └─┬ <series>
-[07:31:29] │   ├── template
-[07:31:29] │   ├─┬ styles
-[07:31:29] │   │ └─┬ <series>
-[07:31:29] │   │   └── sass
-[07:31:29] │   ├── jshint
-[07:31:29] │   ├── modernizr
-[07:31:29] │   ├── jquery
-[07:31:29] │   └── normalize
-[07:31:29] ├─┬ build
-[07:31:29] │ └─┬ <series>
-[07:31:29] │   ├── envProduction
-[07:31:29] │   ├── clean
-[07:31:29] │   ├── template
-[07:31:29] │   ├─┬ styles
-[07:31:29] │   │ └─┬ <series>
-[07:31:29] │   │   └── sass
-[07:31:29] │   ├── modernizr
-[07:31:29] │   ├── jshint
-[07:31:29] │   ├── copy
-[07:31:29] │   └── uglify
-[07:31:29] └─┬ default
-[07:31:29]   └─┬ <series>
-[07:31:29]     └─┬ watch
-[07:31:29]       └─┬ <series>
-[07:31:29]         ├── template
-[07:31:29]         ├─┬ styles
-[07:31:29]         │ └─┬ <series>
-[07:31:29]         │   └── sass
-[07:31:29]         ├── jshint
-[07:31:29]         ├── modernizr
-[07:31:29]         ├── jquery
-[07:31:29]         └── normalize
-
-*/
