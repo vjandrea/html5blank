@@ -6,8 +6,3 @@
 	});
 
 } ( this, jQuery ));
-
-var puppa = "foo";
-$.document.ready(function() {
-	puppa = true;
-});
